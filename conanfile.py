@@ -10,43 +10,52 @@ class EasyprofilerConan(ConanFile):
     description = "Lightweight cross-platform profiler library for c++"
     topics = ("easy_profiler", "profiling", "C++", "profiler")
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=True"
+    options = {
+        "shared": [ True, False],
+        "fPIC": [ True, False],
+        "enable_samples": [ True, False]
+    }
+    default_options = {
+        'shared': False,
+        'fPIC': True,
+        'enable_samples': False
+
+    }
     generators = "cmake"
+    source_subfolder = "source_subfolder"
 
     # Custom variables
     source_url = "https://github.com/ndesai/easy_profiler.git"
     source_branch = "feature/qnx-support"
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
+    def configure(self):
+        del self.settings.compiler.libcxx
+
     def source(self):
         self.run("git clone %s %s" % (self.source_url, self.name))
         self.run("cd %s && git checkout %s" % (self.name, self.source_branch))
-        # This small hack might be useful to guarantee proper /MT /MD linkage
-        # in MSVC if the packaged project doesn't have variables to set it
-        # properly
-#         tools.replace_in_file("hello/CMakeLists.txt", "PROJECT(MyHello)",
-#                               '''PROJECT(MyHello)
-# include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-# conan_basic_setup()''')
+
+    def configure_cmake(self):
+        cmake = CMake(self)
+        cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = self.options.enable_samples
+        cmake.configure(source_folder=self.name)
+        return cmake
 
     def build(self):
-        cmake = CMake(self)
-        cmake.configure(source_folder=self.name)
+        cmake = self.configure_cmake()
         cmake.build()
 
-        # Explicit way:
-        # self.run('cmake %s/hello %s'
-        #          % (self.source_folder, cmake.command_line))
-        # self.run("cmake --build . %s" % cmake.build_config)
-
     def package(self):
-        self.copy("*.h", dst="include", src="easy_profiler/easy_profiler_core/include")
-        self.copy("*.lib", dst="lib", keep_path=False)
-        self.copy("*.dll", dst="bin", keep_path=False)
-        self.copy("*.so", dst="lib", keep_path=False)
-        self.copy("*.dylib", dst="lib", keep_path=False)
-        self.copy("*.a", dst="lib", keep_path=False)
+        cmake = self.configure_cmake()
+        cmake.install()
 
     def package_info(self):
-        self.cpp_info.libs = [self.name]
-
+        self.cpp_info.libs = tools.collect_libs(self)
+        if self.settings.os == "Windows" and not self.options.shared:
+            self.cpp_info.libs.extend(['mswsock', 'ws2_32'])
+        elif self.settings.os == "Linux":
+            self.cpp_info.libs.extend(['anl', 'pthread'])
