@@ -11,9 +11,9 @@ class EasyprofilerConan(ConanFile):
     topics = ("easy_profiler", "profiling", "C++", "profiler")
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "shared": [ True, False],
-        "fPIC": [ True, False],
-        "enable_samples": [ True, False]
+        "shared": [ True, False ],
+        "fPIC": [ True, False ],
+        "enable_samples": [ True, False ]
     }
     default_options = {
         'shared': False,
@@ -42,6 +42,7 @@ class EasyprofilerConan(ConanFile):
     def configure_cmake(self):
         cmake = CMake(self)
         cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = self.options.enable_samples
+        cmake.definitions["BUILD_SHARED_LIBS"] = self.options.shared
         cmake.configure(source_folder=self.name)
         return cmake
 
