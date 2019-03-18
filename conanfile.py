@@ -57,5 +57,5 @@ class EasyprofilerConan(ConanFile):
         self.cpp_info.libs = tools.collect_libs(self)
         if self.settings.os == "Windows" and not self.options.shared:
             self.cpp_info.libs.extend(['mswsock', 'ws2_32'])
-        elif self.settings.os == "Linux":
+        elif self.settings.os == "Linux" or self.settings.os == "QNX":
             self.cpp_info.libs.extend(['anl', 'pthread'])
