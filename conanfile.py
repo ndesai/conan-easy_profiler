@@ -13,13 +13,14 @@ class EasyprofilerConan(ConanFile):
     options = {
         "shared": [ True, False ],
         "fPIC": [ True, False ],
-        "enable_samples": [ True, False ]
+        "enable_samples": [ True, False ],
+        "enable_gui" : [ True, False ]
     }
     default_options = {
         'shared': False,
         'fPIC': True,
-        'enable_samples': False
-
+        'enable_samples': False,
+        'enable_gui': False
     }
     generators = "cmake"
     source_subfolder = "source_subfolder"
@@ -41,8 +42,9 @@ class EasyprofilerConan(ConanFile):
 
     def configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = self.options.enable_samples
+        cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = not self.options.enable_samples
         cmake.definitions["BUILD_SHARED_LIBS"] = self.options.shared
+        cmake.definitions["EASY_PROFILER_NO_GUI"] = not self.options.enable_gui
         cmake.configure(source_folder=self.name)
         return cmake
 
