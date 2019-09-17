@@ -45,6 +45,9 @@ class EasyprofilerConan(ConanFile):
         cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = not self.options.enable_samples
         cmake.definitions["BUILD_SHARED_LIBS"] = self.options.shared
         cmake.definitions["EASY_PROFILER_NO_GUI"] = not self.options.enable_gui
+        if self.options.fPIC:
+            cmake.definitions["CMAKE_C_FLAGS"] = "-fPIC"
+            cmake.definitions["CMAKE_CXX_FLAGS"] = "-fPIC"
         cmake.configure(source_folder=self.name)
         return cmake
 
@@ -64,4 +67,4 @@ class EasyprofilerConan(ConanFile):
             self.cpp_info.libs.extend(['anl', 'pthread'])
         elif self.settings.os == "QNX":
             self.cpp_info.libs.extend(['socket'])
-            
+    
