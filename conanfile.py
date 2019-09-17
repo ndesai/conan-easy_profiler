@@ -45,7 +45,7 @@ class EasyprofilerConan(ConanFile):
         cmake.definitions["EASY_PROFILER_NO_SAMPLES"] = not self.options.enable_samples
         cmake.definitions["BUILD_SHARED_LIBS"] = self.options.shared
         cmake.definitions["EASY_PROFILER_NO_GUI"] = not self.options.enable_gui
-        if self.options.fPIC:
+        if 'fPIC' in self.options and self.options.fPIC:
             cmake.definitions["CMAKE_C_FLAGS"] = "-fPIC"
             cmake.definitions["CMAKE_CXX_FLAGS"] = "-fPIC"
         cmake.configure(source_folder=self.name)
